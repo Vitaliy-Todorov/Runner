@@ -6,67 +6,40 @@ public class Spawner : MonoBehaviour
 {
     [SerializeField]
     List<GameObject> platforms;
+    [SerializeField]
     GameObject tilePlatform;
 
     private void Start()
     {
-        tilePlatform = platforms[platforms.Count - 1];
+        //tilePlatform = platforms[platforms.Count - 1];
         //SpawnTile();
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void SpawnTile()
     {
-        SpawnTile();
-
-        RotationLeft rotationLeft = platforms[1].gameObject.GetComponent<RotationLeft>();
-        if (rotationLeft != null)
+        for (int i = 0; platforms.Count <= 3 && i <= 3; i++)
         {
-            rotationLeft.rotate = true;
-        }
-        RotationRight rotationRight = platforms[1].gameObject.GetComponent<RotationRight>();
-        if (rotationRight != null)
-        {
-            rotationRight.rotate = true;
+            // Получаем последний созданный тайл (или platforms[platforms.Count - 1])
+            Tile tile = tilePlatform.GetComponent<Tile>();
+            tile.spawner = this;
+            int randomInt = Random.Range(0, tile.nextTiles.Count);
+            // Складываем то, насколько уже повёрнута платформа с тем, насколько нужно ещё повернуть
+            float rotation = tile.rotation + tilePlatform.transform.rotation.eulerAngles.y;
+            Quaternion rotationQ = Quaternion.AngleAxis(rotation, Vector3.up);
+            Quaternion q = Quaternion.AngleAxis(tile.rotation, Vector3.up);
+            Vector3 position = tilePlatform.transform.position + rotationQ * tile.distanceToTile;
+            tilePlatform = Instantiate(tile.nextTiles[randomInt], position, rotationQ);
+            // Сохраняется
+            platforms.Add(tilePlatform);
         }
 
-        rotationLeft = platforms[0].gameObject.GetComponent<RotationLeft>();
-        if (rotationLeft != null)
-        {
-            rotationLeft.rotate = false;
-        }
-        rotationRight = platforms[0].gameObject.GetComponent<RotationRight>();
-        if (rotationRight != null)
-        {
-            rotationRight.rotate = false;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        Debug.Log("OnTriggerExit");
-        SpawnTile();
-    }
-
-    void SpawnTile()
-    {
+        Destroy(platforms[0]);
+        platforms.RemoveAt(0);
         //удаляем лишнюю платформу
         if (platforms.Count > 3)
         {
             Destroy(platforms[0]);
             platforms.RemoveAt(0);
-        }
-
-        for (int i = 0; platforms.Count <= 3 && i <= 3; i++)
-        {
-            //Получаем последний созданный тайл (или platforms[platforms.Count - 1])
-            Tile tile = tilePlatform.GetComponent<Tile>();
-            int randomInt = Random.Range(0, tile.nextTiles.Count - 1);
-            //int randomInt = randomFloat % 1;
-            //Создаём таил из возможных последующих и на определённом для этого тайла растоянии, сохраняя его углы
-            tilePlatform = Instantiate(tile.nextTiles[randomInt], (tilePlatform.transform.position + tile.distanceToTile), tile.nextTiles[randomInt].transform.rotation);
-            //Помещаем в родительский объект
-            tilePlatform.transform.SetParent(transform);
-            platforms.Add(tilePlatform);
         }
     }
 }

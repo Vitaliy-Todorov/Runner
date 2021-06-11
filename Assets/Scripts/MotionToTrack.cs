@@ -4,8 +4,29 @@ using UnityEngine;
 
 public class MotionToTrack : MonoBehaviour
 {
-    Vector3 swap = new Vector3(0, 0, 2);
-    int tracks = 3;
+    int tracks = 1;
+
+    MovingAlongCurve movingAlongCurve;
+    List<Transform>[] _curves;
+
+    private void Start()
+    {
+        _curves = new List<Transform>[3];
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Tile tile = other.gameObject.GetComponent<Tile>();
+        if(tile != null)
+        {
+            _curves[0] = tile.curve1;
+            _curves[1] = tile.curve2;
+            _curves[2] = tile.curve3;
+        }
+
+        movingAlongCurve = gameObject.GetComponent<MovingAlongCurve>();
+        movingAlongCurve.Curve = _curves[tracks];
+    }
 
     public void Swap(float y)
     {
@@ -17,19 +38,19 @@ public class MotionToTrack : MonoBehaviour
 
     void Right()
     {
-        if (tracks < 3)
+        if (tracks < 2)
         {
             tracks++;
-            transform.position -= swap;
+            movingAlongCurve.Curve = _curves[tracks];
         }
     }
 
     void Left()
     {
-        if (tracks > 1)
+        if (tracks > 0)
         {
             tracks--;
-            transform.position += swap;
+            movingAlongCurve.Curve = _curves[tracks];
         }
     }
 }
